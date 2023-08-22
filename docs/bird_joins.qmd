@@ -18,6 +18,8 @@ bird_surveys <- read_csv(here("data", "52_pp52_surveys_1.csv" ))
 bird_taxalist <- read_csv(here("data", "52_pp52_taxalist_1.csv" ))
 ```
 
+Use left join(s) to update `birds_subset` so that it also includes `sites` and `taxalist` information. For each join, include an explicit argument saying which variable you are joining by (even if it will just assume the correct one for you). Store the updated data frame as `birds_left`.
+
 ```{r}
 birds_subset <- bird_observations %>% 
   filter(species_id %in% c("BHCO", "RWBL") & site_id %in% c("LI-W", "NU-C"))
@@ -29,6 +31,8 @@ birds_left <- left_join(birds_subset, bird_surveys) %>%
   left_join(bird_taxalist)
 ```
 
+-   Write code to `full_join` the `birds_subset` and `sites` data into a new object called `birds_full`. Explicitly include the variable you\'re joining by. Look at the output. Is it what you expected?
+
 ```{r}
 birds_full <- full_join(birds_subset, sites, by = join_by(site_id))
 ```
@@ -36,11 +40,20 @@ birds_full <- full_join(birds_subset, sites, by = join_by(site_id))
 ## Data Wrangling
 
 ```{r}
+# Starting with your birds object, rename the notes column to bird_obs_notes (so this doesn’t conflict with notes in the surveys dataset
+
 bird_observations %>% 
   rename(bird_obs_notes = notes)
 ```
 
 ```{r}
+# Then, create a subset that contains all observations in the birds dataset, joins the taxonomic, site and survey information to it, and is finally limited to only columns survey_date, common_name, park_name, and bird_count. You can decide the order that you want to create this in (e.g. limit the columns first, then join, or the other way around).
+
+# Use lubridate::month() to add a new column called survey_month, containing only the month number. Then, convert the month number to a factor (again within mutate())
+
+# Learn a new function on your own! Use dplyr::relocate() to move the new survey_month column to immediately after the survey_date column. You can do this in a separate code chunk, or pipe straight into it from your existing code.
+
+
 birds <- bird_observations %>% 
   full_join( sites) %>% 
   full_join(bird_surveys) %>% 
@@ -54,6 +67,10 @@ birds <- bird_observations %>%
 ```
 
 ```{r}
+# Find the total number of birds observed by park and month (i.e., you’ll group_by(park_name, survey_month))
+# 
+# Filter to only include parks “Lindo”, “Orme”, “Palomino” and “Sonrisa”
+
 birds_total <- birds %>% 
   group_by(park_name, survey_month) %>% 
   summarize(counts = n()) %>% 
